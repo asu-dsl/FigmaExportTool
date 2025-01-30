@@ -1,40 +1,49 @@
-Below are the steps to get your plugin running. You can also find instructions at:
+# Component Export Tool for Figma
 
-  https://www.figma.com/plugin-docs/plugin-quickstart-guide/
+A simple plugin to export Figma components with customizable prefixes and formats.
 
-This plugin template uses Typescript and NPM, two standard tools in creating JavaScript applications.
+## Installation
 
-First, download Node.js which comes with NPM. This will allow you to install TypeScript and other
-libraries. You can find the download link here:
+1. Download the latest release from the GitHub releases section
+2. Unzip the package to your preferred location
+3. In Figma, go to Plugins > Development > Import plugin from manifest
+4. Navigate to the unzipped folder and select the manifest.json file
 
-  https://nodejs.org/en/download/
+![Import Plugin](https://imgur.com/a/VnXy8HM)
 
-Next, install TypeScript using the command:
+## Usage
 
-  npm install -g typescript
+1. Select the component(s) you want to export in Figma
+2. Open the plugin via Plugins > Component Export Tool
 
-Finally, in the directory of your plugin, get the latest type definitions for the plugin API by running:
+![Load Plugin](https://imgur.com/h6CReUM)
 
-  npm install --save-dev @figma/plugin-typings
+3. Configure your export settings:
+  - Prefix: Add a prefix to all exported files (defaults to 'ui_')
+  - Custom filename: Available for single selection only
+  - Format: Choose between PNG, JPG, SVG, or PDF
+  - Scale: Set export scale (not applicable for SVG)
 
-If you are familiar with JavaScript, TypeScript will look very familiar. In fact, valid JavaScript code
-is already valid Typescript code.
+![Export UI](https://imgur.com/H2ZNmgV)
 
-TypeScript adds type annotations to variables. This allows code editors such as Visual Studio Code
-to provide information about the Figma API while you are writing code, as well as help catch bugs
-you previously didn't notice.
+4. Click "Export Selected" to start the export process
 
-For more information, visit https://www.typescriptlang.org/
+## Multiple Selection
 
-Using TypeScript requires a compiler to convert TypeScript (code.ts) into JavaScript (code.js)
-for the browser to run.
+When multiple components are selected:
+- Custom filename is disabled
+- Files are exported using the prefix + original component name
+- Exports happen sequentially to ensure reliability
 
-We recommend writing TypeScript code using Visual Studio code:
+## Settings
 
-1. Download Visual Studio Code if you haven't already: https://code.visualstudio.com/.
-2. Open this directory in Visual Studio Code.
-3. Compile TypeScript to JavaScript: Run the "Terminal > Run Build Task..." menu item,
-    then select "npm: watch". You will have to do this again every time
-    you reopen Visual Studio Code.
+Access the settings panel via the gear icon to:
+- Set a default prefix for all exports
+- Configure export path
+- Settings are saved between sessions
 
-That's it! Visual Studio Code will regenerate the JavaScript file every time you save.
+## Notes
+
+- The plugin handles one export at a time to ensure reliability
+- Progress bar shows export status for multiple selections
+- SVG exports automatically disable scale options
