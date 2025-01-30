@@ -9,22 +9,22 @@ A simple plugin to export Figma components with customizable prefixes and format
 3. In Figma, go to Plugins > Development > Import plugin from manifest
 4. Navigate to the unzipped folder and select the manifest.json file
 
-![Import Plugin](https://imgur.com/a/VnXy8HM)
+<img src="https://i.imgur.com/17awNvf.png" width="50%" alt="Import Plugin">
 
 ## Usage
 
 1. Select the component(s) you want to export in Figma
 2. Open the plugin via Plugins > Component Export Tool
 
-![Load Plugin](https://imgur.com/h6CReUM)
+<img src="https://i.imgur.com/h6CReUM.png" width="50%" alt="Load Plugin">
 
 3. Configure your export settings:
-  - Prefix: Add a prefix to all exported files (defaults to 'ui_')
-  - Custom filename: Available for single selection only
-  - Format: Choose between PNG, JPG, SVG, or PDF
-  - Scale: Set export scale (not applicable for SVG)
+   - Prefix: Add a prefix to all exported files (defaults to 'ui_')
+   - Custom filename: Available for single selection only
+   - Format: Choose between PNG, JPG, SVG, or PDF
+   - Scale: Set export scale (not applicable for SVG)
 
-![Export UI](https://imgur.com/H2ZNmgV)
+<img src="https://i.imgur.com/H2ZNmgV.png" width="50%" alt="Export UI">
 
 4. Click "Export Selected" to start the export process
 
