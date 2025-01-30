@@ -47,3 +47,8 @@ Access the settings panel via the gear icon to:
 - The plugin handles one export at a time to ensure reliability
 - Progress bar shows export status for multiple selections
 - SVG exports automatically disable scale options
+
+## Authors
+
+- [Sanjana Yalla](https://github.com/SanjanaReddyYalla)
+- [Alireza Bahremand](https://github.com/TheWiselyBearded)
