@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Inter, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    select, input, button {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #e5e5e5;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    button {
+      background: #18A0FB;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1491e6;
+    }
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .export-info {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .title {
+      margin: 0;
+      font-size: 14px;
+    }
+    .icon-button {
+      padding: 4px 8px;
+      background: transparent;
+      border: 1px solid #e5e5e5;
+    }
+    .settings-panel {
+      background: #f5f5f5;
+      padding: 16px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    .button-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .secondary {
+      background: #e5e5e5;
+      color: black;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #e5e5e5;
+      border-radius: 2px;
+      margin-top: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #18A0FB;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+    .selection-info {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h3 class="title">Component Export Tool</h3>
+      <button id="showSettings" class="icon-button">⚙️ Settings</button>
+    </div>
+
+    <div id="settingsPanel" class="settings-panel" style="display: none;">
+      <h4>Export Settings</h4>
+      <div>
+        <label for="defaultPrefix">Default Prefix:</label>
+        <input type="text" id="defaultPrefix" placeholder="ui_">
+      </div>
+      <div>
+        <label for="exportPath">Export Path:</label>
+        <input type="text" id="exportPath" placeholder="Leave blank for Downloads folder">
+      </div>
+      <div class="button-group">
+        <button id="saveSettings" class="secondary">Save Settings</button>
+        <button id="closeSettings" class="secondary">Close</button>
+      </div>
+    </div>
+
+    <div id="exportUI">
+      <div id="selectionInfo" class="selection-info">
+        No items selected
+      </div>
+
+      <div>
+        <label for="prefix">Prefix (defaults to saved setting):</label>
+        <input type="text" id="prefix" placeholder="ui_">
+      </div>
+      
+      <div>
+        <label for="customName">Custom Filename (disabled for multiple selections):</label>
+        <input type="text" id="customName" placeholder="Leave blank to use component name">
+      </div>
+
+      <div>
+        <label for="format">Export Format:</label>
+        <select id="format">
+          <option value="PNG">PNG</option>
+          <option value="JPG">JPG</option>
+          <option value="SVG">SVG</option>
+          <option value="PDF">PDF</option>
+        </select>
+      </div>
+      
+      <div>
+        <label for="scale">Scale:</label>
+        <select id="scale">
+          <option value="1">1x</option>
+          <option value="2">2x</option>
+          <option value="3">3x</option>
+          <option value="4">4x</option>
+        </select>
+      </div>
+
+      <button id="export">Export Selected</button>
+      
+      <div id="exportInfo" class="export-info" style="display: none;">
+        <div id="exportPath"></div>
+        <div id="exportStatus"></div>
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentSettings = {
+      defaultPrefix: 'ui_',
+      exportPath: ''
+    };
+
+    function updateSelectionInfo(count) {
+      const infoElement = document.getElementById('selectionInfo');
+      const customNameInput = document.getElementById('customName');
+      
+      if (count === 0) {
+        infoElement.textContent = 'No items selected';
+        customNameInput.disabled = true;
+      } else if (count === 1) {
+        infoElement.textContent = '1 item selected';
+        customNameInput.disabled = false;
+      } else {
+        infoElement.textContent = `${count} items selected`;
+        customNameInput.disabled = true;
+        customNameInput.value = '';
+      }
+    }
+
+    // Settings panel controls
+    document.getElementById('showSettings').onclick = () => {
+      document.getElementById('settingsPanel').style.display = 'block';
+      document.getElementById('exportUI').style.display = 'none';
+    };
+
+    document.getElementById('closeSettings').onclick = () => {
+      document.getElementById('settingsPanel').style.display = 'none';
+      document.getElementById('exportUI').style.display = 'block';
+    };
+
+    document.getElementById('saveSettings').onclick = () => {
+      currentSettings = {
+        defaultPrefix: document.getElementById('defaultPrefix').value.trim(),
+        exportPath: document.getElementById('exportPath').value.trim()
+      };
+      
+      parent.postMessage({
+        pluginMessage: {
+          type: 'save-settings',
+          settings: currentSettings
+        }
+      }, '*');
+      
+      document.getElementById('prefix').value = currentSettings.defaultPrefix;
+      document.getElementById('settingsPanel').style.display = 'none';
+      document.getElementById('exportUI').style.display = 'block';
+    };
+
+    document.getElementById('format').onchange = (e) => {
+      const scaleSelect = document.getElementById('scale');
+      scaleSelect.disabled = e.target.value === 'SVG';
+      if (e.target.value === 'SVG') {
+        scaleSelect.title = 'Scale not applicable for SVG format';
+      } else {
+        scaleSelect.title = '';
+      }
+    };
+
+    document.getElementById('export').onclick = () => {
+      const prefix = document.getElementById('prefix').value.trim() || currentSettings.defaultPrefix;
+      const customName = document.getElementById('customName').value.trim();
+      const format = document.getElementById('format').value;
+      const scale = parseInt(document.getElementById('scale').value);
+      
+      // Start with first node
+      parent.postMessage({ 
+        pluginMessage: { 
+          type: 'export-one',
+          nodeIndex: 0,
+          prefix,
+          customName,
+          format,
+          scale
+        }
+      }, '*');
+
+      // Show initial status
+      const infoDiv = document.getElementById('exportInfo');
+      const statusDiv = document.getElementById('exportStatus');
+      infoDiv.style.display = 'block';
+      statusDiv.innerHTML = 'Export in progress...';
+    };
+
+    window.onmessage = async (event) => {
+      if (!event.data.pluginMessage) return;
+      
+      const msg = event.data.pluginMessage;
+      console.log('Received message:', msg.type);
+
+      if (msg.type === 'settings-loaded') {
+        currentSettings = msg.settings;
+        document.getElementById('defaultPrefix').value = currentSettings.defaultPrefix;
+        document.getElementById('exportPath').value = currentSettings.exportPath;
+        document.getElementById('prefix').value = currentSettings.defaultPrefix;
+        updateSelectionInfo(msg.selectionCount);
+      }
+      
+      if (msg.type === 'selection-updated') {
+        updateSelectionInfo(msg.count);
+      }
+      
+      if (msg.type === 'save-file') {
+        const infoDiv = document.getElementById('exportInfo');
+        const statusDiv = document.getElementById('exportStatus');
+        const progressFill = document.getElementById('progressFill');
+        
+        infoDiv.style.display = 'block';
+        statusDiv.innerHTML = `Exporting ${msg.nodeIndex + 1} of ${msg.totalNodes}: ${msg.fileName}`;
+        
+        const percentage = ((msg.nodeIndex + 1) / msg.totalNodes) * 100;
+        progressFill.style.width = `${percentage}%`;
+
+        // Create download
+        const blob = new Blob([msg.bytes], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = msg.fileName;
+        link.click();
+        
+        // Clean up
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+          
+          // Move to next node after a delay
+          if (msg.nodeIndex + 1 < msg.totalNodes) {
+            setTimeout(() => {
+              const prefix = document.getElementById('prefix').value.trim() || currentSettings.defaultPrefix;
+              const customName = document.getElementById('customName').value.trim();
+              const format = document.getElementById('format').value;
+              const scale = parseInt(document.getElementById('scale').value);
+              
+              parent.postMessage({ 
+                pluginMessage: { 
+                  type: 'export-one',
+                  nodeIndex: msg.nodeIndex + 1,
+                  prefix,
+                  customName,
+                  format,
+                  scale
+                }
+              }, '*');
+            }, 1000); // Wait 1 second before starting next export
+          } else {
+            statusDiv.innerHTML = 'All exports complete!';
+          }
+        }, 500);
+      }
+    };
+  </script>
+</body>
+</html>
